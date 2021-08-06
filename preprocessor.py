@@ -1,7 +1,7 @@
 import sys, os, random, numpy, pandas, csv
 
 numpy.random.seed(2021)
-devortrain = input("Dev o Train? ")
+devortrain = input("Dev o Train? [dev train] ")
 if devortrain == "dev":
     DABS = pandas.read_csv('development/drugprot_development_abstracs.tsv', sep='\t', names=['id','titolo','txt'])
     DENT = pandas.read_csv('development/drugprot_development_entities.tsv', sep='\t', names=['id','t','tipo','ini','fin','nome'])
@@ -13,7 +13,7 @@ elif devortrain == "train":
 else:
     raise Exception("Scelta non compatibile")
 
-test = input("Test? ")
+test = input("Dividi in ⅔ tra train e test? [si no] ")
 test = True if test == "si" else False
 
 def componi(nabs = 16618126):

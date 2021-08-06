@@ -1,7 +1,7 @@
 import sys, os, random, numpy, pandas, csv
 
 numpy.random.seed(2021)
-devortrain = input("Dev o Train? ")
+devortrain = input("Dev o Train? [dev train] ")
 if devortrain == "dev":
     DR = pandas.read_csv('development/drugprot_development_relations.tsv', sep='\t', names=['id','tipo','arg1','arg2'])
     DE = pandas.read_csv('development/drugprot_development_entities.tsv', sep='\t', names=['id','t','tipo','ini','fin','nome'])
@@ -10,6 +10,8 @@ elif devortrain == "train":
     DE = pandas.read_csv('training/drugprot_training_entities.tsv', sep='\t', names=['id','t','tipo','ini','fin','nome'])
 else:
     raise Exception("Scelta non compatibile")
+tutti = input("Generare tutti i casi negativi (altrimenti, uno su trenta)? [si no] ")
+tutti = True if tutti == "si" else False
 
 os.remove('relations2.tsv')
 with open('relations2.tsv', 'xt', encoding='UTF-8', newline='') as DREL:
@@ -44,8 +46,9 @@ with open('relations2.tsv', 'xt', encoding='UTF-8', newline='') as DREL:
                         if nchem==t1 and ngen==t2:
                             presente = True
                             break
-                    if not presente and random.randint(0, 30) == 30:
-                        tsv_writer.writerow([idattuale, "FALSE", f"Arg1:T{nchem}", f"Arg2:T{ngen}"])
+                    if not presente:
+                        if tutti or random.randint(0, 30) == 30:
+                            tsv_writer.writerow([idattuale, "FALSE", f"Arg1:T{nchem}", f"Arg2:T{ngen}"])
                     # print(f"nchem{nchem} ngen{ngen} presente: {presente}")
                     # print(relazionipositive)
             if imax != i+1:

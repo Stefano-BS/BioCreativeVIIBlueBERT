@@ -13,6 +13,20 @@ Yp = []
 with open("output/test_results.tsv") as output:
     output = csv.reader(output, delimiter="\t")
     for linea in output:
-        Yp.append(etichette[linea.index(max(linea))])
+        i=0
+        max=0
+        imax=0
+        for num in linea:
+            if float(num) > max:
+                max = float(num)
+                imax=i
+            i+=1
+        Yp.append(etichette[imax])
+        i+=1
 
-print(classification_report(Y[1:], Yp, target_names=etichette))
+debug = False
+if debug:
+    for i in range(100):
+        print(Y[i+1], Yp[i])
+
+print(classification_report(Y[1:], Yp))
