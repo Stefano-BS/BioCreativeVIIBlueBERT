@@ -9,8 +9,10 @@ with open("test.tsv") as test:
     for linea in test:
         Y.append(linea[2])
 
+opath = input("Percorso file output (vuoto per output/test_results.tsv): ")
+opath = "output/test_results.tsv" if not opath else opath
 Yp = []
-with open("output/test_results.tsv") as output:
+with open(opath) as output:
     output = csv.reader(output, delimiter="\t")
     for linea in output:
         i=0
@@ -29,4 +31,19 @@ if debug:
     for i in range(100):
         print(Y[i+1], Yp[i])
 
-print(classification_report(Y[1:], Yp))
+csvout = input("Fare csv? ")
+if csvout:
+    ocsv = opath[0:len(opath)-3] + "csv"
+    with open(ocsv, 'xt', encoding='UTF-8', newline='') as ocsv:
+        csv_writer = csv.writer(ocsv, delimiter=';')
+        dict = classification_report(Y[1:len(Yp)+1], Yp, output_dict=True)
+        for k in dict:
+            riga = [k]
+            if type(dict[k]) == float:
+                riga.append(dict[k])
+            else:
+                for val in dict[k]:
+                    riga.append(dict[k][val])
+            csv_writer.writerow(riga)
+else:
+    print(classification_report(Y[1:len(Yp)+1], Yp))

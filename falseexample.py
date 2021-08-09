@@ -13,7 +13,7 @@ else:
 tutti = input("Generare tutti i casi negativi (altrimenti, uno su trenta)? [si no] ")
 tutti = True if tutti == "si" else False
 
-os.remove('relations2.tsv')
+#os.remove('relations2.tsv')
 with open('relations2.tsv', 'xt', encoding='UTF-8', newline='') as DREL:
     tsv_writer = csv.writer(DREL, delimiter='\t')
     

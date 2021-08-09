@@ -35,8 +35,8 @@ flags.DEFINE_integer("train_batch_size", 32, "Total batch size for training.")
 flags.DEFINE_integer("eval_batch_size", 8, "Total batch size for eval.")
 flags.DEFINE_integer("predict_batch_size", 8, "Total batch size for predict.")
 flags.DEFINE_float("learning_rate", 5e-5, "The initial learning rate for Adam.")
-flags.DEFINE_float("num_train_epochs", 3.0, "Total number of training epochs to perform.")
 flags.DEFINE_float("warmup_proportion", 0.1, "Proportion of training to perform linear learning rate warmup for. E.g., 0.1 = 10% of training.")
+flags.DEFINE_float("num_train_epochs", 3.0, "Total number of training epochs to perform.") # ???
 
 flags.DEFINE_integer("save_checkpoints_steps", 1000, "How often to save the model checkpoint.")
 flags.DEFINE_integer("iterations_per_loop", 1000, "How many steps to make in each estimator call.")
@@ -171,12 +171,9 @@ class ChemProtProcessor(BlueBERTProcessor):
         """See base class."""
         return ["CPR:3", "CPR:4", "CPR:5", "CPR:6", "CPR:9", "false"]
 
-
-# @!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!@!
 class ChemProtProcessor2(BlueBERTProcessor):
     def get_labels(self):
         return ['FALSE', 'SUBSTRATE_PRODUCT-OF', "PRODUCT-OF", "ANTAGONIST", "SUBSTRATE", "ACTIVATOR", "INHIBITOR", 'AGONIST-INHIBITOR', "INDIRECT-DOWNREGULATOR", "INDIRECT-UPREGULATOR", "AGONIST", "AGONIST-ACTIVATOR", "PART-OF", "DIRECT-REGULATOR"]
-
 
 class DDI2013Processor(BlueBERTProcessor):
     def get_labels(self):
@@ -247,12 +244,8 @@ def convert_single_example(ex_index, example, label_list, max_seq_length, tokeni
         tokens_b = tokenizer.tokenize(example.text_b)
 
     if tokens_b:
-        # Modifies `tokens_a` and `tokens_b` in place so that the total
-        # length is less than the specified length.
-        # Account for [CLS], [SEP], [SEP] with "- 3"
         _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)
     else:
-        # Account for [CLS] and [SEP] with "- 2"
         if len(tokens_a) > max_seq_length - 2:
             tokens_a = tokens_a[0:(max_seq_length - 2)]
 
@@ -415,10 +408,8 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
         token_type_ids=segment_ids,
         use_one_hot_embeddings=use_one_hot_embeddings)
 
-    # In the demo, we are doing a simple classification task on the entire
-    # segment.
-    # If you want to use the token-level output, use model.get_sequence_output()
-    # instead.
+    # In the demo, we are doing a simple classification task on the entire segment.
+    # If you want to use the token-level output, use model.get_sequence_output() instead.
     output_layer = model.get_pooled_output()
 
     hidden_size = output_layer.shape[-1].value
@@ -698,8 +689,7 @@ def main(_):
 
         # This tells the estimator to run through the entire set.
         eval_steps = None
-        # However, if running eval on the TPU, you will need to specify the
-        # number of steps.
+        # However, if running eval on the TPU, you will need to specify the number of steps.
         if FLAGS.use_tpu:
             assert len(eval_examples) % FLAGS.eval_batch_size == 0
             eval_steps = int(len(eval_examples) // FLAGS.eval_batch_size)
