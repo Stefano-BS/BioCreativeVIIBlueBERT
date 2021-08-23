@@ -1,7 +1,7 @@
 import os
-import tensorflow as tf
-flags = tf.flags
-FLAGS = flags.FLAGS
+# import tensorflow as tf
+# flags = tf.flags
+# FLAGS = flags.FLAGS
 
 print("La prima opzione nella lista è quella di default, ottenibile con input vuoto")
 nohup = input("nohup: [si no] ")

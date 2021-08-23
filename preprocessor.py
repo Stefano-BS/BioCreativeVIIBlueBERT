@@ -1,20 +1,24 @@
 import sys, os, random, numpy, pandas, csv
 
 numpy.random.seed(2021)
-devortrain = input("Dev o Train? [dev train] ")
-if devortrain == "dev":
+dset = input("Preparare da Dev, Train o Test? [dev train test] ")
+if dset == "dev":
     DABS = pandas.read_csv('development/drugprot_development_abstracs.tsv', sep='\t', names=['id','titolo','txt'])
     DENT = pandas.read_csv('development/drugprot_development_entities.tsv', sep='\t', names=['id','t','tipo','ini','fin','nome'])
     DREL = pandas.read_csv('development/drugprot_development_relations.tsv', sep='\t', names=['id','tipo','arg1','arg2'])
-elif devortrain == "train":
+elif dset == "train":
     DABS = pandas.read_csv('training/drugprot_training_abstracs.tsv', sep='\t', names=['id','titolo','txt'])
     DENT = pandas.read_csv('training/drugprot_training_entities.tsv', sep='\t', names=['id','t','tipo','ini','fin','nome'])
     DREL = pandas.read_csv('training/drugprot_training_relations.tsv', sep='\t', names=['id','tipo','arg1','arg2'])
+elif dset == "test":
+    DABS = pandas.read_csv('testset/test_background_abstracts.tsv', sep='\t', names=['id','titolo','txt'])
+    DENT = pandas.read_csv('testset/test_background_entities.tsv', sep='\t', names=['id','t','tipo','ini','fin','nome'])
+    try:
+        DREL = pandas.read_csv('testset/relations.tsv', sep='\t', names=['id','tipo','arg1','arg2'])
+    except:
+        DREL = None
 else:
     raise Exception("Scelta non compatibile")
-
-test = input("Dividi in ⅔ tra train e test? [si no] ")
-test = True if test == "si" else False
 
 def componi(nabs = 16618126):
     # Ritorna lista di input per BERT: [(id, testo, classe)]
@@ -87,15 +91,17 @@ def componi(nabs = 16618126):
         i+=1
     return ret
 
-def mktrain(test):
+def mktrain():
+    testsplit = input("Dividi in ⅔ tra train e test? [si no] ")
+    testsplit = True if testsplit == "si" else False
     retid = ""
     rettxt = ""
     retclass = ""
     i = 0
-    with open('train.tsv', 'xt', encoding='UTF-8', newline='') as train:
-        tsv_writer = csv.writer(train, delimiter='\t')
-        if test:
-            testfile = open('test.tsv', 'xt', encoding='UTF-8', newline='')
+    with open(f'{dset}.tsv', 'xt', encoding='UTF-8', newline='') as output:
+        tsv_writer = csv.writer(output, delimiter='\t')
+        if testsplit:
+            testfile = open(f'{dset}⅓.tsv', 'xt', encoding='UTF-8', newline='')
             tsv_writertest = csv.writer(testfile, delimiter='\t')
         
         for nabs in DREL.id:
@@ -149,7 +155,7 @@ def mktrain(test):
                 rettxt = rettxt[0:indici[0]-nuovoinizio] + f"@{tipi[0]}$" + rettxt[indici[1]-nuovoinizio:]
                 rettxt = rettxt[0:indici[2]-nuovoinizio] + f"@{tipi[1]}$" + rettxt[indici[3]-nuovoinizio:]
             
-            if test:
+            if testsplit:
                 if random.randint(1, 3) > 2:
                     tsv_writertest.writerow([retid, rettxt, retclass])
                 else:
@@ -159,12 +165,36 @@ def mktrain(test):
             i+=1
 
 def mktrain2():
-    with open('train.tsv', 'xt', encoding='UTF-8', newline='') as train:
-        tsv_writer = csv.writer(train, delimiter='\t')
+    with open(f'{dset}.tsv', 'xt', encoding='UTF-8', newline='') as output:
+        tsv_writer = csv.writer(output, delimiter='\t')
         ultimonabs = 0
         for nabs in DREL.id:
             if nabs != ultimonabs:
                 ultimonabs = nabs
                 tsv_writer.writerows(componi(nabs))
 
-mktrain(test)
+def mktrain3():
+    with open('relations.tsv', 'xt', encoding='UTF-8', newline='') as DREL:
+        tsv_writer = csv.writer(DREL, delimiter='\t')
+        
+        for i in numpy.unique(numpy.array(DENT.id)):
+            j = 0
+            ultimochem = 0
+            ultimogen = 0
+            for n2 in DENT.id:
+                if n2 == i:
+                    if DENT.tipo[j] == "GENE":
+                        ultimogen = int(DENT.t[j].replace("T", ''))
+                    else:
+                        ultimochem = int(DENT.t[j].replace("T", ''))
+                j+=1
+            
+            for chimico in range(1, ultimochem+1):
+                for gene in range(ultimochem+1, ultimogen+1):
+                    tsv_writer.writerow([i, '?', f"Arg1:T{chimico}", f"Arg2:T{gene}"])
+
+
+
+programmi = ["mktrain()", "mktrain2()", "mktrain3()"]
+scelta = input("Quale operazione eseguire?\n0: Componi partendo da relations\n1: Come 1\n2: Crea relations a partire da abstracts ed entities\n")
+eval(programmi[int(scelta)])
